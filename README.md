@@ -27,6 +27,8 @@ The platform is designed to make game creation simple while demonstrating how co
 
 ## Overview
 
+![Phase 1 Editor UI](docs/phase1-editor.png)
+
 PixelForge brings all parts of 2D game development into one screen:
 - Draw pixel art and create sprite sheets.
 - Build frame-by-frame character animations.

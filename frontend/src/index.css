@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  --parchment: #f5ead6;
+  --parchment-dark: #e8d5b4;
+  --ink: #2c1810;
+  --ink-light: #5c3a28;
+  --sand: #d4a853;
+  --sand-light: #e8c97a;
+  --sand-dark: #a87d32;
+  --water: #48a9a6;
+  --coral: #c0392b;
+  --grid-line: rgba(44, 24, 16, 0.06);
+  --grid-line-major: rgba(44, 24, 16, 0.12);
+}
+
+@theme {
+  --color-parchment: var(--parchment);
+  --color-parchment-dark: var(--parchment-dark);
+  --color-ink: var(--ink);
+  --color-ink-light: var(--ink-light);
+  --color-sand: var(--sand);
+  --color-sand-light: var(--sand-light);
+  --color-sand-dark: var(--sand-dark);
+  --color-water: var(--water);
+  --color-coral: var(--coral);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--parchment);
+  color: var(--ink);
+  font-family: "Courier New", Courier, monospace;
+  user-select: none;
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.7;
+  background-image: 
+    linear-gradient(var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
+
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  top: 15vh;
+  right: 8vw;
+  width: 400px;
+  height: 400px;
+  z-index: 10;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 40%, rgba(139, 90, 43, 0.12) 60%, rgba(139, 90, 43, 0.18) 65%, transparent 70%);
+  filter: blur(2px);
+  transform: scaleY(0.85) rotate(-15deg);
+  opacity: 0.8;
+}
+
+.dim-callout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dim-callout::before,
+.dim-callout::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-image: repeating-linear-gradient(90deg, var(--ink-light) 0px, var(--ink-light) 3px, transparent 3px, transparent 6px);
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-light);
+}
+.section-divider::before,
+.section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--ink-light);
+}
+
+.scroll-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: rgba(44, 24, 16, 0.1);
+  z-index: 9999;
+}
+.scroll-progress-bar {
+  height: 100%;
+  background-color: var(--ink);
+  transition: width 0.1s ease-out;
+}
