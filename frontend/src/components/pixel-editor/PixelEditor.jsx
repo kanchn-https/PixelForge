@@ -4,6 +4,7 @@ import PixelCanvas from './PixelCanvas.jsx';
 import FrameLayout from './FrameLayout.jsx';
 import ColorPalette from './ColorPalette.jsx';
 import StatusBar from './StatusBar.jsx';
+import Toast from '../shared/Toast.jsx';
 import { createMatrix, setPixel } from '../../utils/pixelMatrix.js';
 
 const PRESET_SIZES = [
@@ -21,6 +22,8 @@ export default function PixelEditor() {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [zoom, setZoom] = useState(100);
   const [cursorPos, setCursorPos] = useState({ x: null, y: null });
+  const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
   // Main matrix state
   const [matrix, setMatrix] = useState(() => createMatrix(32, 32));
@@ -44,6 +47,37 @@ export default function PixelEditor() {
   const handleAddFrame = () => {
     setFrames((prev) => [...prev, prev.length + 1]);
     setCurrentFrame(frames.length);
+  };
+
+  const handleSaveToDatabase = async () => {
+    setIsSaving(true);
+    try {
+      // 1. Send the matrix to our FastAPI backend!
+      // (For this demo, we assume we are saving to Sprite ID 1)
+      const response = await fetch('http://localhost:8000/sprites/1/frames', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          frame_order: currentFrame,
+          pixel_matrix: matrix,
+          duration_ms: 100
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save. Did you create the user/project/sprite first?');
+      }
+
+      const data = await response.json();
+      setToast({ message: `Success! Saved Frame ${data.frame_order} to PostgreSQL (Frame ID: ${data.id})`, type: 'success' });
+    } catch (error) {
+      console.error(error);
+      setToast({ message: 'Error saving to database. Check console for details.', type: 'error' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -71,6 +105,15 @@ export default function PixelEditor() {
 
             {/* Right Meta-box */}
             <div className="w-64 flex flex-col text-[0.7rem] uppercase tracking-[0.15em] font-bold">
+              <div className="flex-1 border-b border-grid-line-major p-2 bg-ink/5 flex items-center justify-center">
+                 <button 
+                   onClick={handleSaveToDatabase}
+                   disabled={isSaving}
+                   className="w-full bg-ink text-parchment py-1 hover:bg-ink-light transition-colors shadow-sm"
+                 >
+                   {isSaving ? 'SAVING...' : 'SAVE TO POSTGRESQL'}
+                 </button>
+              </div>
               <div className="flex-1 border-b border-grid-line-major px-3 py-1 flex justify-between items-center bg-ink/5">
                 <span className="text-ink-light">Drawing No.</span>
                 <span>PF-001</span>
@@ -167,6 +210,13 @@ export default function PixelEditor() {
         cursorX={cursorPos.x}
         cursorY={cursorPos.y}
         currentTool={currentTool}
+      />
+      
+      {/* Toast Notifications */}
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast({ message: '', type: 'success' })} 
       />
     </div>
   );
