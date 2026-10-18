@@ -119,6 +119,7 @@
     previewTimer: null,
     previewToken: null,
     previewRunId: 0,
+    previewResize: null,
     toastTimer: null,
   };
 
@@ -126,6 +127,7 @@
     return Array.from({ length: height }, () => Array(width).fill(null));
   }
 
+  // Sends a request to the local API, parses its response, and throws for HTTP errors.
   async function request(path, options = {}) {
     const response = await fetch(path, {
       ...options,
@@ -219,10 +221,10 @@
         $("#code-fallback").hidden = true;
         if (state.project) state.monaco.setValue(state.code);
       }, () => {
-        $("#editor-mode").textContent = "HTML · text editor fallback";
+        $("#editor-mode").textContent = "Text editor fallback";
       });
     };
-    script.onerror = () => { $("#editor-mode").textContent = "HTML · text editor fallback"; };
+    script.onerror = () => { $("#editor-mode").textContent = "Text editor fallback"; };
     document.head.append(script);
   }
 
@@ -305,12 +307,14 @@
     renderCanvas();
   }
 
+  // Moves the current drawing between history stacks before restoring the selected snapshot.
   function undo() {
     if (!state.undoStack.length) return;
     state.redoStack.push(snapshot());
     restoreSnapshot(state.undoStack.pop());
   }
 
+  // Restores the next drawing state and keeps the current state available to undo.
   function redo() {
     if (!state.redoStack.length) return;
     state.undoStack.push(snapshot());
@@ -410,6 +414,7 @@
     renderCanvas();
   }
 
+  // Posts the sprite name, dimensions, and matrix to the assets API, then refreshes both sprite lists.
   async function saveSprite() {
     if (!state.project) return;
     const name = $("#sprite-name").value.trim() || "Untitled sprite";
@@ -432,6 +437,7 @@
     }
   }
 
+  // Adds an undo point before loading a saved sprite into the drawing canvas.
   function loadSprite(asset) {
     pushUndo();
     state.width = asset.width;
@@ -442,6 +448,7 @@
     renderCanvas();
   }
 
+  // Updates saved sprite cards and the checklist used when generating a game.
   function renderAssets() {
     const list = $("#asset-list");
     const checklist = $("#sprite-checklist");
@@ -502,7 +509,7 @@
     if (!state.conversations.length) {
       const welcome = document.createElement("div");
       welcome.className = "chat-welcome";
-      welcome.innerHTML = '<span class="welcome-mark">✳</span><p>Let’s make something small and fun.</p><span>Try: “Make a one-screen game where my hero collects stars.”</span>';
+      welcome.innerHTML = '<p>Let’s make something small and fun.</p><span>Try: “Make a one-screen game where my hero collects stars.”</span>';
       log.append(welcome);
       return;
     }
@@ -553,6 +560,7 @@
     $("#version-count").textContent = state.versions.length + (state.versions.length === 1 ? " saved version" : " saved versions");
   }
 
+  // Reads the project API response and redraws its sprites, versions, and conversations.
   async function refreshProjectData() {
     if (!state.project) return;
     const details = await request("/api/projects/" + state.project.id);
@@ -564,6 +572,7 @@
     renderConversations();
   }
 
+  // Reads one project from the projects API and updates its game code and workspace panels.
   async function loadProject(projectId) {
     stopGame();
     const details = await request("/api/projects/" + projectId);
@@ -572,20 +581,21 @@
     state.versions = details.versions;
     state.conversations = details.conversations;
     setEditorValue(details.latest_version ? details.latest_version.game_code : starterGame);
-    $("#file-name").textContent = "game.html";
+    $("#file-name").textContent = "game";
     renderCanvas();
     renderAssets();
     renderVersions();
     renderConversations();
     $("#project-select").value = projectId;
     setWorkspaceEnabled(true);
-    $("#editor-mode").textContent = state.monaco ? "HTML · single file" : "HTML · text editor";
+    $("#editor-mode").textContent = state.monaco ? "Code editor" : "Text editor";
     setSaveStatus("Saved", "saved");
     if (state.monaco) state.monaco.focus();
     if (details.latest_version) $("#export-button").disabled = false;
     else $("#export-button").disabled = true;
   }
 
+  // Reads the projects API response and refreshes the project selector.
   async function refreshProjectList(selectedId) {
     const result = await request("/api/projects");
     state.projects = result.projects;
@@ -600,6 +610,7 @@
     if (selectedId) select.value = selectedId;
   }
 
+  // Posts a project name; opens the returned project and saves its initial game version.
   async function createProject(name) {
     const result = await request("/api/projects", { method: "POST", body: JSON.stringify({ name }) });
     await refreshProjectList(result.project.id);
@@ -608,6 +619,7 @@
     return result.project;
   }
 
+  // Posts game code to the versions API, then refreshes version history and save status.
   function saveVersion(automatic = false) {
     if (!state.project || !state.code.trim()) return Promise.resolve(null);
     clearTimeout(state.autosaveTimer);
@@ -639,6 +651,7 @@
     return task;
   }
 
+  // Posts a restore request for the selected version, then reloads the project and reports its revision.
   async function restoreVersion() {
     if (!state.project || !$("#version-select").value) return;
     const versionId = $("#version-select").value;
@@ -655,6 +668,7 @@
     }
   }
 
+  // Fetches the saved game from the project export endpoint and downloads the returned HTML file.
   async function exportGame() {
     if (!state.project) return;
     try {
@@ -673,7 +687,7 @@
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast("HTML game exported.");
+      showToast("Game exported.");
     } catch (error) {
       showToast("Could not export the game: " + error.message, true);
     }
@@ -683,6 +697,7 @@
     return Array.from($("#sprite-checklist").querySelectorAll("input:checked"), (input) => input.value);
   }
 
+  // Posts the prompt and selected sprite IDs to the AI endpoint, then saves its response to the editor/history.
   async function generateGame(event) {
     event.preventDefault();
     const prompt = $("#game-prompt").value.trim();
@@ -701,7 +716,7 @@
         body: JSON.stringify({ prompt, asset_ids: selectedAssetIds() }),
       });
       state.conversations.push(result.conversation);
-      progress.querySelector(".chat-bubble").textContent = "Game generated. Review the single HTML file, then run it in the preview.";
+      progress.querySelector(".chat-bubble").textContent = "Game generated. Review it in the workbench, then run the preview.";
       setEditorValue(result.conversation.response);
       await refreshProjectData();
       $("#export-button").disabled = false;
@@ -727,6 +742,7 @@
     }
   }
 
+  // Posts game code to the preview endpoint and loads its returned URL in the sandboxed iframe.
   async function runGame() {
     if (!state.project) return;
     stopGame();
@@ -773,6 +789,43 @@
     const panel = $("#game-errors");
     panel.textContent = (line ? "Line " + line + ": " : "") + message;
     panel.hidden = false;
+  }
+
+  // Captures the pointer and records editor/preview sizes so the preview can grow upward.
+  function startPreviewResize(event) {
+    if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) return;
+    event.preventDefault();
+    const shell = $("#preview-shell");
+    const codeArea = $(".code-area");
+    const codeHeight = codeArea.getBoundingClientRect().height;
+    const minCodeHeight = Number.parseFloat(getComputedStyle(codeArea).minHeight);
+    state.previewResize = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      previewHeight: shell.getBoundingClientRect().height,
+      codeHeight,
+      minCodeHeight,
+    };
+    $(".workbench-panel").classList.add("is-resizing-preview");
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  // Resizes the preview against the editor while keeping the workbench's bottom edge fixed.
+  function resizePreview(event) {
+    const resize = state.previewResize;
+    if (!resize || event.pointerId !== resize.pointerId) return;
+    const delta = resize.startY - event.clientY;
+    const maxIncrease = Math.max(0, resize.codeHeight - resize.minCodeHeight);
+    const appliedDelta = Math.max(180 - resize.previewHeight, Math.min(maxIncrease, delta));
+    $("#preview-shell").style.height = resize.previewHeight + appliedDelta + "px";
+    $(".code-area").style.height = resize.codeHeight - appliedDelta + "px";
+  }
+
+  // Ends the captured resize interaction when the pointer is released or cancelled.
+  function endPreviewResize(event) {
+    if (!state.previewResize || event.pointerId !== state.previewResize.pointerId) return;
+    state.previewResize = null;
+    $(".workbench-panel").classList.remove("is-resizing-preview");
   }
 
   function stopGame() {
@@ -848,6 +901,17 @@
     $("#run-button").addEventListener("click", runGame);
     $("#stop-button").addEventListener("click", stopGame);
     $("#restart-button").addEventListener("click", runGame);
+    const resizeHandle = $("#preview-resize-handle");
+    resizeHandle.addEventListener("pointerdown", startPreviewResize);
+    resizeHandle.addEventListener("pointermove", resizePreview);
+    resizeHandle.addEventListener("pointerup", endPreviewResize);
+    resizeHandle.addEventListener("pointercancel", endPreviewResize);
+    resizeHandle.addEventListener("lostpointercapture", endPreviewResize);
+    window.addEventListener("resize", () => {
+      if (state.previewResize) return;
+      $("#preview-shell").style.removeProperty("height");
+      $(".code-area").style.removeProperty("height");
+    });
     $("#undo-button").addEventListener("click", undo);
     $("#redo-button").addEventListener("click", redo);
     $("#canvas-size").addEventListener("change", (event) => resizeGrid(event.target.value));

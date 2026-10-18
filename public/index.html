@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101116">
+  <meta name="theme-color" content="#F4E8D0">
   <title>PixelForge — make a little game</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
@@ -18,15 +18,14 @@
     <div class="top-actions">
       <span id="save-status" class="save-status">Ready</span>
       <button id="save-button" class="button button-secondary" type="button" disabled>Save version</button>
-      <button id="export-button" class="button button-primary" type="button" disabled>Export HTML ↗</button>
+      <button id="export-button" class="button button-primary" type="button" disabled>Export game ↗</button>
     </div>
   </header>
 
   <main class="workspace">
     <section class="panel sprite-panel" aria-labelledby="sprite-heading">
       <div class="panel-heading">
-        <div><span class="eyebrow">01 / CREATE</span><h1 id="sprite-heading">Pixel studio</h1></div>
-        <span class="heading-icon" aria-hidden="true">▦</span>
+        <div><h1 id="sprite-heading">PIXEL STUDIO</h1></div>
       </div>
       <div id="sprite-workspace" class="sprite-workspace is-disabled">
         <div class="editor-toolbar">
@@ -68,9 +67,9 @@
       </div>
     </section>
 
-    <section class="panel workbench-panel" aria-label="Game workbench">
+    <section class="panel workbench-panel" aria-label="GAME WORKBENCH">
       <div class="panel-heading workbench-heading">
-        <div><span class="eyebrow">02 / BUILD</span><h1>Game workbench</h1></div>
+        <div><h1>GAME WORKBENCH</h1></div>
         <div class="runtime-controls">
           <button id="run-button" class="button button-run" type="button" disabled><span>▶</span> Run</button>
           <button id="stop-button" class="button button-stop" type="button" disabled>■ Stop</button>
@@ -78,25 +77,26 @@
         </div>
       </div>
       <div class="editor-titlebar">
-        <div class="file-tab"><span class="html-dot"></span><span id="file-name">game.html</span><span class="file-badge">HTML</span></div>
-        <span id="editor-mode" class="editor-mode">HTML · single file</span>
+        <div class="file-tab"><span id="file-name">game</span></div>
+        <span id="editor-mode" class="editor-mode">Code editor</span>
       </div>
       <div class="code-area">
-        <div id="monaco-editor" aria-label="Game HTML code editor"></div>
-        <textarea id="code-fallback" aria-label="Game HTML code editor" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+        <div id="monaco-editor" aria-label="Game code editor"></div>
+        <textarea id="code-fallback" aria-label="Game code editor" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
         <div id="editor-empty" class="empty-state editor-empty">
-          <div class="empty-icon">⌘</div><h2>Your game code lives here</h2><p>Create a project to start editing a self-contained HTML game.</p>
+          <h2>Your game code lives here</h2><p>Create a project to start editing your game.</p>
         </div>
       </div>
       <div class="preview-heading">
-        <div class="preview-label"><span class="live-dot"></span><h2>Game preview</h2><span class="preview-caption">sandboxed canvas · 60 sec limit</span></div>
+        <div class="preview-label"><span class="live-dot"></span><h2>Game preview</h2></div>
         <span id="preview-state" class="preview-state">Stopped</span>
       </div>
-      <div class="preview-shell">
+      <div id="preview-shell" class="preview-shell">
         <div id="preview-placeholder" class="preview-placeholder">
-          <span class="preview-sparkle">✳</span><p>Run your game to see it here</p><span>Sandboxed · no network or storage access</span>
+          <p>Run your game to see it here</p>
         </div>
         <iframe id="game-frame" title="Sandboxed game preview" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
+        <button id="preview-resize-handle" class="preview-resize-handle" type="button" aria-label="Resize game preview vertically" title="Drag to resize preview"><span aria-hidden="true">↑</span></button>
       </div>
       <div id="game-errors" class="error-panel" role="status" aria-live="polite" hidden></div>
       <div class="version-bar">
@@ -107,23 +107,21 @@
 
     <aside class="panel assistant-panel" aria-labelledby="assistant-heading">
       <div class="panel-heading assistant-heading">
-        <div><span class="eyebrow">03 / IMAGINE</span><h1 id="assistant-heading">AI game maker</h1></div>
-        <span class="ai-orb" aria-hidden="true">✳</span>
+        <div><h1 id="assistant-heading">AI GAME ASSISTANT</h1></div>
       </div>
-      <div class="assistant-intro"><p>Describe a tiny game. PixelForge builds one HTML file using the sprites you choose.</p><p id="gemini-status" class="gemini-status">Checking Gemini configuration…</p></div>
-      <div class="sprite-attachments"><div class="attachment-heading"><span class="field-label">Include sprites</span><span class="muted-label">sent with your prompt</span></div><div id="sprite-checklist" class="sprite-checklist"><p class="empty-note">Save sprites to use them in a game.</p></div></div>
-      <div id="chat-log" class="chat-log"><div class="chat-welcome"><span class="welcome-mark">✳</span><p>Let’s make something small and fun.</p><span>Try: “Make a one-screen game where my hero collects stars.”</span></div></div>
+      <div class="assistant-intro"><p id="gemini-status" class="gemini-status">Checking Gemini configuration…</p></div>
+      <div class="sprite-attachments"><div class="attachment-heading"><span class="field-label">Include sprites</span></div><div id="sprite-checklist" class="sprite-checklist"><p class="empty-note">Save sprites to use them in a game.</p></div></div>
+      <div id="chat-log" class="chat-log"><div class="chat-welcome"><p>Let’s make something small and fun.</p><span>Try: “Make a one-screen game where my hero collects stars.”</span></div></div>
       <form id="prompt-form" class="prompt-form">
         <label class="visually-hidden" for="game-prompt">Describe your game</label>
         <textarea id="game-prompt" rows="4" maxlength="4000" placeholder="Describe the game you want to make…" disabled></textarea>
-        <div class="prompt-footer"><span class="prompt-hint">One file · HTML + CSS + JS</span><button id="send-prompt" class="button button-primary send-button" type="submit" disabled><span>Generate</span><span aria-hidden="true">↑</span></button></div>
+        <div class="prompt-footer"><button id="send-prompt" class="button button-primary send-button" type="submit" disabled><span>Generate</span><span aria-hidden="true">↑</span></button></div>
       </form>
-      <div class="privacy-note"><span>◇</span><span>Your game runs in a restricted, isolated preview. Gemini keys stay on this server.</span></div>
+      <div class="privacy-note"><span>© 2026 PixelForge</span></div>
     </aside>
   </main>
   <dialog id="project-dialog">
     <form id="project-form" method="dialog" class="project-dialog-form">
-      <span class="eyebrow">NEW WORKSPACE</span>
       <h2>Create a project</h2>
       <label for="project-name">Project name</label>
       <input id="project-name" name="name" type="text" maxlength="80" placeholder="My tiny game" required>
