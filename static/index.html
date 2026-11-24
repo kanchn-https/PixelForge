@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#F4E8D0">
+<title>PixelForge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1 class="logo"><span class="mark">▦</span> pixel<span class="end">forge</span></h1>
+  <nav id="tabs">
+    <button data-tab="studio" class="on">Pixel Studio</button>
+    <button data-tab="builder">AI Game Builder</button>
+    <button data-tab="preview">Game Preview</button>
+  </nav>
+  <div class="bar">
+    <select id="project" aria-label="Project"></select>
+    <button id="newProject">New project</button>
+    <button id="demo">Load demo</button>
+    <button id="export" class="primary">Export game</button>
+  </div>
+</header>
+
+<main>
+  <section id="studio" class="ws on">
+    <div class="panel">
+      <div class="toolbar">
+        <button id="pencil" class="on">Pencil</button><button id="eraser">Eraser</button><span class="sep"></span>
+        <button id="undo">Undo</button><button id="redo">Redo</button><span class="sep"></span>
+        <button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomLabel"></span><button id="zoomIn" aria-label="Zoom in">+</button>
+      </div>
+      <div id="palette"></div>
+      <div class="canvasWrap"><canvas id="pix"></canvas></div>
+    </div>
+    <div class="panel side">
+      <h2>Sprite</h2>
+      <label>Name<input id="sname" maxlength="30" placeholder="Robot"></label>
+      <label>Category
+        <select id="scat"><option>Character</option><option>Enemy</option><option>Collectible</option><option>Platform</option><option>Background</option><option>Other</option></select>
+      </label>
+      <div class="row"><button id="saveSprite" class="primary">Save sprite</button><button id="newSprite">New sprite</button></div>
+      <h2>Saved sprites <span id="count" class="muted"></span></h2>
+      <div id="spriteList" class="grid"></div>
+    </div>
+  </section>
+
+  <section id="builder" class="ws">
+    <div class="panel code">
+      <div class="toolbar" id="ftabs">
+        <button data-f="html" class="on">index.html</button><button data-f="css">style.css</button><button data-f="js">script.js</button>
+      </div>
+      <div id="monaco"></div>
+      <textarea id="fallback" hidden spellcheck="false"></textarea>
+    </div>
+    <div class="panel side">
+      <h2>AI assistant</h2>
+      <textarea id="prompt" rows="5" placeholder="Describe the game rules, or the change you want to make to the current game."></textarea>
+      <div class="row"><button id="chooseAssets">Choose assets</button><label class="chk"><input type="checkbox" id="fresh">Start over</label></div>
+      <div id="selected"></div>
+      <button id="generate" class="primary">Generate game</button>
+      <div id="status" role="status"></div>
+    </div>
+  </section>
+
+  <section id="preview" class="ws">
+    <div class="panel full">
+      <div class="toolbar">
+        <button id="play">Play</button><button id="pause">Pause</button><button id="restart">Restart</button><button id="stop">Stop</button><button id="full">Fullscreen</button>
+      </div>
+      <div id="stage">
+        <iframe id="frame" sandbox="allow-scripts" title="Game preview"></iframe>
+        <p id="empty">No game yet. Choose assets in the AI Game Builder and generate one.</p>
+      </div>
+      <div id="perr" hidden></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="picker">
+  <h2>Choose assets</h2>
+  <div id="pickGrid" class="grid"></div>
+  <div class="row end"><button id="pickDone" class="primary">Done</button></div>
+</dialog>
+<div id="toast" role="alert" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

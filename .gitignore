@@ -1,0 +1,4 @@
+__pycache__/
+pixelforge.db
+.env
+.DS_Store
